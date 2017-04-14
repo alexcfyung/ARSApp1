@@ -1,9 +1,11 @@
 ﻿var mysql = require('mysql');
 var async = require("async");
 
+var user_name = 'root';
+
 var connection = mysql.createConnection({
     host     : 'localhost',
-    user     : 'root',
+    user     : user_name,
     password : '1234',
     database : 'arsystems'
 });
@@ -55,8 +57,10 @@ connection.beginTransaction(function (err) {
                     function () { return count < result.length; },
                     function (callback) {
                         // insert new data if not exist
-                        connection.query('INSERT INTO consumer_product_alert (product_alert_id, consumer_id, prod_id, manufacturer_id) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE consumer_id=consumer_id;',
-                         [result[count].product_alert_id, result[count].consumer_id, result[count].prod_id, result[count].manufacturer_id], function (err, rows, fields) {
+                        console.log('Date.now(): ' + Date.now());
+                        console.log('Date.UTC(): ' + Date.UTC(2017));
+                        connection.query('INSERT INTO consumer_product_alert (product_alert_id, consumer_id, prod_id, manufacturer_id, txn_userid, txn_dttm) VALUES (?, ?, ?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE consumer_id=consumer_id;',
+                         [result[count].product_alert_id, result[count].consumer_id, result[count].prod_id, result[count].manufacturer_id, user_name], function (err, rows, fields) {
                             if (err) {
                                 console.log('Error while performing Query3.\n' + err);
                                 return connection.rollback(function () {
@@ -89,7 +93,6 @@ connection.beginTransaction(function (err) {
                         connection.end();
                     }
                 );
-            });  
-        
+            });      
     });
 });
